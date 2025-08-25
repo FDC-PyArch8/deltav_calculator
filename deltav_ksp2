@@ -1,0 +1,43 @@
+"""
+Includes data from the fictional solar system of the popular video game Kerbal
+Space Program 2. Values were either copied directly from the Tracking Station
+or calculated using values from the game. The data is intended to be used
+together with the deltav_interplanetary function to calculate the delta-v
+budgets for missions in-game.
+
+Date: 23.5.2025
+
+Author: Filipe da Costa
+"""
+
+import math
+import deltav_calculator as dv
+
+G = 6.6743 * 10 ** (-11)
+
+mass =  {"Su" : 1.76 * 10 ** 28,
+         "Mo" : 2.53 * 10 ** 21,
+         "Ev" : 1.22 * 10 ** 23,
+         "Ke" : 5.29 * 10 ** 22,
+         "Du" : 4.52 * 10 ** 21,
+         "Dr" : 3.22 * 10 ** 20,
+         "Jo" : 4.23 * 10 ** 24,
+         "Ee" : 1.11 * 10 ** 21}
+
+# Dictionary of celestial object radii in m
+object_radius =  {"Mo" : 2.50 * 10 ** 5,
+                  "Ev" : 6.99 * 10 ** 5,
+                  "Ke" : 6.00 * 10 ** 5,
+                  "Du" : 3.20 * 10 ** 5,
+                  "Dr" : 1.38 * 10 ** 5,
+                  "Jo" : 6.00 * 10 ** 6,
+                  "Ee" : 2.10 * 10 ** 5}
+
+# Dictionary of satellite average distance from their parent body
+distance = {"Mo" : 5.26 * 10 ** 9,
+            "Ev" : 9.83 * 10 ** 9,
+            "Ke" : 1.36 * 10 ** 10,
+            "Du" : 2.07 * 10 ** 10,
+            "Dr" : 4.08 * 10 ** 10,
+            "Jo" : 6.88 * 10 ** 10,
+            "Ee" : 9.01 * 10 ** 10}
