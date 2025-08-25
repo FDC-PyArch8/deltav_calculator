@@ -1,0 +1,145 @@
+"""
+Contains the masses, radii and orbital radii of bodies in the solar system.
+Contains the function delta_v_interplanetary which calculates the delta-v and
+approximate time for a one-directional interplanetary mission.
+
+Date: 16.5.2025
+
+Author: Filipe da Costa
+"""
+
+import deltav_calculator as dv
+import math
+
+# Defining Newton's Gravitational Constant
+G = 6.6743 * 10 ** (-11)
+
+# Dictionary of solar system masses in kg
+mass =  {"Su" : 1.9891 * 10 ** 30,
+         "Me" : 3.3011 * 10 ** 23,
+         "Ve" : 4.8675 * 10 ** 24,
+         "Ea" : 5.9724 * 10 ** 24,
+         "Mo" : 7.3460 * 10 ** 22,
+         "Ma" : 6.4171 * 10 ** 23,
+         "Ju" : 1.8981 * 10 ** 27,
+         "Sa" : 5.6832 * 10 ** 26,
+         "Ur" : 8.6813 * 10 ** 25,
+         "Ne" : 1.0241 * 10 ** 26}
+
+# Dictionary of average celestial object radii in m
+object_radius =  {"Su" : 6.9570 * 10 ** 8,
+                  "Me" : 2.4397 * 10 ** 6,
+                  "Ve" : 6.0518 * 10 ** 6,
+                  "Ea" : 6.3710 * 10 ** 6,
+                  "Mo" : 1.7374 * 10 ** 6,
+                  "Ma" : 3.3895 * 10 ** 6,
+                  "Ju" : 6.9911 * 10 ** 7,
+                  "Sa" : 5.8232 * 10 ** 7,
+                  "Ur" : 2.5362 * 10 ** 7,
+                  "Ne" : 2.4622 * 10 ** 7}
+
+# Dictionary of satellite average distance from their parent body
+distance = {"Me" : 5.7900 * 10 ** 10,
+            "Ve" : 1.0820 * 10 ** 11,
+            "Ea" : 1.4960 * 10 ** 11,
+            "Mo" : 3.8440 * 10 **  8,
+            "Ma" : 2.2790 * 10 ** 11,
+            "Ju" : 7.7860 * 10 ** 11,
+            "Sa" : 1.4335 * 10 ** 12,
+            "Ur" : 2.8725 * 10 ** 12,
+            "Ne" : 4.4951 * 10 ** 12}
+
+# Dictionary of equatorial surface velocities for Earth and Mars
+equator_velocity = {"Ea" : 463.83,
+                    "Ma" : 240.26}
+
+def deltav_interplanetary(origin, destination, altitude_origin, \
+                           altitude_destination):
+    """
+    Returns the delta vs for the launch from an origin planet [0], the
+    interplanetary transfer burn [1], the orbital insertion [2] and landing on
+    the destination planet [3]. Also returns the approximate travel time
+    between planets [4]. Gravity assists and air resistance are not taken into
+    account and burns are assumed to be instantaneous and to have taken place
+    at periapsis in order to avoid gravity drag. Celestial objects are referred
+    to by their first two letters with the first capitalised. Altitudes are in
+    metres and are always given from the equator.
+
+    Parameters
+    ----------
+    origin : str                  first two letters (first is capitalised) of
+                                  the planet where the spacecraft is travelling
+                                  from, i.e. "Ea"
+    destination : str             first two letters (first is capitalised) of
+                                  the planet where the spacecraft is travelling
+                                  to, i.e. "Ma"
+    altitude_origin : int         altitude of the post-launch orbit around the
+                                  origin planet [m]
+    altitude_destination : int    altitude of the pre-landing orbit around the
+                                  destination planet [m]
+
+    Returns
+    -------
+    launch_delta_v : int     delta-v to launch from the origin planet into a
+                             circular orbit with an altitude of altitude_origin
+                             [m/s]
+    escape_delta_v : int     delta-v to insert into the transfer orbit from the
+                             origin planet to the destination planet [m/s]
+    capture_delta_v : int    delta-v to insert into the circular capture orbit
+                             around the destination planet [m/s]
+    landing_delta_v : int    delta-v to land on the destination planet [m/s]
+    duration_years : int     approximate travel time between planets [y]
+
+    """
+    # For Earth and Mars equatorial surface velocities were included to provide
+    # a minimum delta v neglecting atmospheric drag.
+    if (origin == "Ea" and destination == "Ma") or \
+        (origin == "Ma" and destination == "Ea"):
+            surface_vel_origin = equator_velocity[origin]
+            surface_vel_destination = equator_velocity[destination]
+    else:
+        surface_vel_origin = 0
+        surface_vel_destination = 0
+    
+    # Calculating the delta v to launch from the origin planet into a circular
+    # orbit with an altitude of altitude_origin
+    orbital_radius_origin = altitude_origin + object_radius[origin]
+    mu_origin = G * mass[origin]
+    launch_delta_v = dv.launch_deltav(orbital_radius_origin, \
+                                       surface_vel_origin, mu_origin, \
+                                       object_radius[origin])
+    
+    # Calculating the delta v to escape the origin planet's gravity well and
+    # obtain an elliptical transfer orbit to the destination planet
+    distance_origin = distance[origin]
+    mu_sun = G * mass["Su"]
+    distance_destination = distance[destination]
+    escape_delta_v = dv.deltav_capture(distance_origin, distance_destination,\
+                                        orbital_radius_origin, mu_sun, \
+                                        mu_origin)[1]
+    
+    # Determining the delta v to decelerate into a circular orbit with an
+    # altitude of altitude_destination above the destination planet
+    orbital_radius_destination = altitude_destination \
+                                 + object_radius[destination]
+    mu_destination = G * mass[destination]
+    capture_delta_v = dv.deltav_capture(distance_destination, \
+                                         distance_origin, \
+                                         orbital_radius_destination, mu_sun, \
+                                         mu_destination)[1]
+    
+    # Calculating the delta v to land on the destination planet
+    landing_delta_v = dv.launch_deltav(orbital_radius_destination, \
+                                        surface_vel_destination, \
+                                        mu_destination, \
+                                        object_radius[destination])
+    
+    # Using the semi-major axis a of the transfer orbit in order to find the
+    # approximate time in years to travel between planets derived from Kepler's
+    # third law.
+    a = ((distance_origin + distance_destination) / 2)
+    duration_seconds = math.sqrt(4 * math.pi ** 2 * a ** 3 / mu_sun) / 2
+    duration_years = duration_seconds / (3600 * 24 * 365)
+    
+    return launch_delta_v, escape_delta_v, capture_delta_v, landing_delta_v, \
+        duration_years
