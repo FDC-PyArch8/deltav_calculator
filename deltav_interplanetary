@@ -1,7 +1,13 @@
 """
-Contains the masses, radii and orbital radii of bodies in the solar system.
-Contains the function delta_v_interplanetary which calculates the delta-v and
-approximate time for a one-directional interplanetary mission.
+Contains the masses, radii and orbital radii of bodies in the solar system
+including the sun, the eight planets and the moon.
+Contains the function deltav_interplanetary which calculates the delta-v and
+approximate time for a one-directional interplanetary mission. Other than the
+launch delta-v, the burns are performed at periapsis or apoapsis to eliminate
+gravity drag. All burns are assumed to be instantaneous and the orbital
+distances of planets are assumed to be constant and is taken as the average
+orbital radius. Gravity assists and atmospheric effects such as air resistance
+are not taken into account.
 
 Date: 16.5.2025
 
