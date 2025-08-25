@@ -1,0 +1,200 @@
+"""
+This is a library of functions useful in calculating delta-vs and other related
+quantities in orbital mechanics.
+
+Date: 10.5.2025
+
+Author: Filipe da Costa
+"""
+import math
+
+G = 6.6743 * 10 ** (-11)
+
+def deltav_gravity(vi, vf, ri, rf, mu):
+    """
+    Returns the delta-v when a burn is done with a component of the force in
+    the direction of gravity (not performed at periapsis or apoapsis).
+
+    Parameters
+    ----------
+    vi : int    velocity before the burn [m/s]
+    vf : int    velocity at the highest point reached by the object [m/s]
+    ri : int    initial distance of the object from the center of the body [m]
+    rf : int    largest distance reached by the object from the center of the
+                body after the maneuver [m]
+    mu : int    gravitational parameter mu = GM, where M is the mass of the
+                body [m**2/s**2]
+
+    Returns
+    deltav_gravity : int    delta-v required for a burn which is not done at 
+                            periapsis or apoapsis [m/s]
+
+    """
+    deltav_gravity = math.sqrt(vf ** 2 - 2 * mu / rf - vi ** 2 + 2 * mu / ri)
+    return deltav_gravity
+
+
+def orbital_speed(r, mu):
+    """
+    Returns the velocity of an object in a circular orbit
+
+    Parameters
+    ----------
+    r : int    orbital radius (altitude plus radius of the body) of the
+               circular orbit [m]
+    mu : int   gravitational parameter mu = GM, where M is the mass of the
+               body [m**2/s**2]
+
+    Returns
+    -------
+    v : int    velocity of the circular orbit [m/s]
+
+    """
+    v = math.sqrt(mu / r)
+    return v
+
+
+def launch_deltav(r, vs, mu, R):
+    """
+    Returns the delta-v for launching into a circular orbit of radius r from
+    a body of radius R.
+    
+    Parameters
+    ----------
+    r : int     orbital radius of the desired circular orbit [m]
+    vs : int    velocity of the surface of the body in the Easterly direction
+                (it is more efficient to launch to the East from the equator
+                 for a prograde orbit) [m/s]
+    mu : int    gravitational parameter mu = GM, where M is the mass of the
+                body [m**2/s**2]
+    R : int     radius of the body [m]
+
+    Returns
+    -------
+    deltav_launch : int    delta-v to launch into a circular orbit of radius r
+    from a body of radius R
+
+    """
+    # calculates the orbital velocity vf at orbital radius r
+    vf = orbital_speed(r, mu)
+    deltav_launch = deltav_gravity(0, vf, R, r, mu) - vs
+    return deltav_launch
+
+def semi_major_axis(r, v, mu):
+    """
+    Returns the semi-major axis for a given velocity and orbital radius
+
+    Parameters
+    ----------
+    r : int    orbital radius at some instance in time [m]
+    v : int    velocity at the same instance in time [m/s]
+    mu : int   gravitational parameter mu = GM, where M is the mass of the
+               body [m**2/s**2]
+
+    Returns
+    -------
+    semi_major_axis : int    semi_major_axis of the orbit (equivalent to the
+                             sum of the periapsis and apoapsis) [m]
+
+    """
+    semi_major_axis = r / 2 - mu / (v ** 2 * r)
+    return semi_major_axis
+
+
+def elliptical_velocity(rp, ra, r, mu):
+    """
+    Calculates the velocity of an elliptical orbit at a certain orbital radius
+    using the vis-viva equation.
+
+    Parameters
+    ----------
+    rp : int    periapsis of the orbit [m]
+    ra : int    apoapsis of the orbit [m]
+    r : int     orbital radius at some instance in time [m]
+    mu : int   gravitational parameter mu = GM, where M is the mass of the
+               body [m**2/s**2]
+
+    Returns
+    -------
+    v : velocity at the given point in the orbit
+
+    """
+    v = math.sqrt(mu * (2 / r - 2 / (rp + ra)))
+    return v
+
+
+def Hohmann_transfer(ri, rf, mu):
+    """
+    Calculates the delta vs for the Hohmann transfer manoeuvers used to enter
+    an orbit of larger radius. Derived using the vis-viva equation. The Hohmann
+    transfer is a combination of two maneuvres used to switch between two
+    circular orbits with different radii. One maneuvre is performed to enter
+    an elliptical transfer orbit with its periapsis at the same radius as the
+    smaller orbit and its periapsis at the larger orbit. The second accelerates
+    the spacecraft at the apoapsis in order to enter the larger circular orbit.
+    The delta-v values can be taken in reverse to change from a larger orbit to
+    a smaller orbit, i.e. the transfer maneuver delta-v becomes the circular-
+    isation maneuver and the circularisation maneuvre becomes the transfer
+    maneuver.
+
+    Parameters
+    ----------
+    ri : int   radius of the initial circular orbit [m]
+    rf : int   radius of the final circular orbit [m]
+    mu : int   gravitational parameter mu = GM, where M is the mass of the
+               body [m**2/s**2]
+
+    Returns
+    -------
+    delta_v1 : int    delta-v of the first maneuver (entering an elliptical
+                      orbit with periapsis ri and apoapsis rf) [m/s]
+    delta_v2 : int    delta-v of the second maneuver (entering the final
+                      circular orbit with radius rf) [m/s]
+    """
+    delta_v1 = math.sqrt(mu / ri) * (math.sqrt(2 * rf / (ri + rf)) - 1)
+    delta_v2 = math.sqrt(mu / rf) * (1 - math.sqrt(2 * ri / (ri + rf)))
+    return (delta_v1, delta_v2)
+
+
+def deltav_capture(D, ri, rc, mu1, mu2):
+    """
+    Calculates the delta v to enter an elliptical transfer orbit from a
+    circular orbit of radius ri around a parent body to an orbiting body a
+    constant distance D away. Also calculates the delta v to enter a circular
+    orbit of radius rp around the smaller body.
+
+    Parameters
+    ----------
+    D : int      orbital distance of the smaller body from the larger body [m]
+    ri : int     orbital radius of the initial circular orbit around the parent
+                 body [m]
+    rc : int     orbital radius of the final circular orbit around the smaller
+                 body [m]
+    mu1 : int    gravitational parameter of the parent body [m**2/s**2]
+    mu2 : int    gravitational parameter of the smaller body [m**2/s**2]
+
+    Returns
+    -------
+    delta_v1 : int    delta-v to enter an elliptical transfer orbit from a
+                      circular orbit of radius ri around a parent body to an
+                      orbiting body a constant distance D away [m/s]
+    delta_v2 : int    delta v to enter a circular orbit of radius rc around
+                      the smaller body [m/s]
+    """
+    rf = D + rc
+    # Using vis-viva equation to find ve, the velocity at r = rf relative to 
+    # Earth, and vi, the velocity at r = ri, where rf is the apoapsis of the
+    # elliptical transfer orbit and ri is the periapsis.
+    ve = elliptical_velocity(ri, rf, rf, mu1)
+    vi = elliptical_velocity(ri, rf, ri, mu1)
+    delta_v1 = vi - orbital_speed(ri, mu1)
+    
+    # calculating the velocity of the satellite vs and vr the velocity of the
+    # spacecraft relative to the satellite.
+    vs = orbital_speed(D, mu1)
+    vr = vs - ve
+    # The following is derived using the conservation of energy, where the
+    # gravitational potential lost equals the specific kinetic energy gained.
+    vc = math.sqrt(vr ** 2 + 2 * mu2 / rc)
+    delta_v2 = vc - orbital_speed(rc, mu2)
+    return delta_v1, delta_v2
