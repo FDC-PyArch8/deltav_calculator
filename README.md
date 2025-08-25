@@ -4,7 +4,7 @@ deltav_calculator is a Python package which includes the data and functions to c
 
 # Detailed description
 
-Includes functions which can be used to calculate the delta-v required for various orbital maneuvers as well as interplanetary and Earth-Moon system missions. Also includes data for the masses and average radii of the sun and planets. The formulas used include Keppler's third law, the Vis-viva equation and expressions derived using energy conservation. The data was sourced from the following Wikipedia article: https://en.wikipedia.org/wiki/List_of_Solar_System_objects_by_size and the game Kerbal Space Program 2. Assumptions made include no inclination changes, instantaneous burns, no gravity assists and no air resistance.
+Includes functions which can be used to calculate the delta-v required for various orbital maneuvers as well as interplanetary and Earth-Moon system missions. Also includes data for the masses and average radii of the sun and planets for the solar system and the fictional solar system of Kerbal Space Program 2. The formulas used include Keppler's third law, the Vis-viva equation and expressions derived using energy conservation. The data was sourced from the following Wikipedia article: https://en.wikipedia.org/wiki/List_of_Solar_System_objects_by_size and the game Kerbal Space Program 2. Assumptions made include no inclination changes, instantaneous burns, no gravity assists and no air resistance.
 
 # Purpose
 
