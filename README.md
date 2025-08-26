@@ -14,12 +14,12 @@ Initially intended as a set of functions to calculate the values found in delta-
 
 Using your terminal, clone the repository https://github.com/FDC-PyArch8/deltav_calculator as follows:
 
-git clone https://github.com/FDC-PyArch8/deltav_calculator
+git clone https://github.com/FDC-PyArch8/deltav_calculator \n
 cd deltav_calculator
 
-# Install dependencies as follows:
+# Dependencies
 
-pip.install math
+math library (pre-installed)
 
 # Images
 
