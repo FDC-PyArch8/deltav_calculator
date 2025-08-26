@@ -14,7 +14,8 @@ Initially intended as a set of functions to calculate the values found in delta-
 
 Using your terminal, clone the repository https://github.com/FDC-PyArch8/deltav_calculator as follows:
 
-git clone https://github.com/FDC-PyArch8/deltav_calculator \n
+git clone https://github.com/FDC-PyArch8/deltav_calculator
+
 cd deltav_calculator
 
 # Dependencies
